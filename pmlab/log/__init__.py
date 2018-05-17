@@ -6,7 +6,7 @@ from collections import defaultdict
 import xml.etree.ElementTree as xmltree
 from copy import deepcopy
 import gzip
-import reencoders
+from ..log import reencoders
 import csv
 import re
 #import projectors
@@ -59,7 +59,7 @@ def log_from_file(filename, format=None, universal_newline=False,
         elif ext == '.xes':
             format = 'xes'
         else:
-            raise TypeError, ('Could not determine the format of the file. '
+            raise TypeError('Could not determine the format of the file. '
                                 'Specify manually')
     if format=='raw':
         log = log_from_iterable(file, name, 'raw', uniq_cases, 
@@ -71,7 +71,7 @@ def log_from_file(filename, format=None, universal_newline=False,
     elif format=='xes_all':
         log = log_from_xes(file, all_info=True, only_uniq_cases=uniq_cases)
     else:
-        raise ValueError, 'Unknown log format.'
+        raise ValueError('Unknown log format.')
     if own_fid:
         file.close()
     return log
@@ -147,7 +147,7 @@ def log_from_xes(file, all_info=False, only_uniq_cases=False):
     else:
         filename=file.name
     if all_info and only_uniq_cases:
-        raise ValueError, 'Incompatible arguments in log_from_xes'
+        raise ValueError('Incompatible arguments in log_from_xes')
     tr = {'concept:name':'name', 'lifecycle:transition':'transition',
             'time:timestamp':'timestamp'}
     tree = xmltree.parse(file)
@@ -193,7 +193,7 @@ def log_from_csv(filename, cols_to_read=None,all_info=False, only_uniq_cases=Fal
     else:
         name=filename.name
     if all_info and only_uniq_cases:
-        raise ValueError, 'Incompatible arguments in log_from_csv'
+        raise ValueError('Incompatible arguments in log_from_csv')
     with open(name, 'r') as f:        
         cases = []
         #uniq_cases = defaultdict(int)
@@ -219,7 +219,7 @@ def log_from_csv(filename, cols_to_read=None,all_info=False, only_uniq_cases=Fal
                 else:
                     dict_csv[row[cols_to_read[0]]] = [tuple([row[cols_to_read[1]],row[cols_to_read[2]]])]
             else:
-                raise ValueError, 'Wrong columns to read'
+                raise ValueError('Wrong columns to read')
                 
                 
         #sorting the activities of each case by the timestamps and create a case in cases var
@@ -341,13 +341,13 @@ class Log:
         start_activities = set([w[0] for w in uniq_cases])
         if len(start_activities) > 1:
             start_act_ok = False
-            print 'More than one initial activity:', start_activities
+            print('More than one initial activity:', start_activities)
         if start_act_ok:
             start_act = start_activities.pop()
             for words in uniq_cases:
                 start_act_ok &= start_act not in words[1:-1]
         if start_act_ok:
-            print 'Log has a unique start activity that fires only once per case'
+            print('Log has a unique start activity that fires only once per case')
         return start_act_ok
     
     def add_dummy_start_activity(self, candidates=['S','start','begin']):
@@ -384,13 +384,13 @@ class Log:
         end_activities = set([w[-1] for w in uniq_cases])
         if len(end_activities) > 1:
             end_act_ok = False
-            print 'More than one final activity:', end_activities
+            print('More than one final activity:', end_activities)
         if end_act_ok:
             end_act = end_activities.pop()
             for words in uniq_cases:
                 end_act_ok &= end_act not in words[1:-1]
         if end_act_ok:
-            print 'Log has a unique end activity that fires only once per case'
+            print('Log has a unique end activity that fires only once per case')
         return end_act_ok
     
     def add_dummy_end_activity(self, candidates=['E','final','end']):
@@ -454,7 +454,7 @@ class Log:
                 own_fid = True
             else:
                 file = filename
-            print 'Saving dictionary to', file.name
+            print('Saving dictionary to', file.name)
             reencoder.save(file)
             if own_fid:
                 file.close()
@@ -478,15 +478,15 @@ class Log:
         return sorted(histo.items(), key=lambda x: x[0])
     
     def statistics(self):
-        print 'Alphabet size:', len(self.get_alphabet())
+        print('Alphabet size:', len(self.get_alphabet()))
         all_cases = len(self.get_cases())
-        print 'Number of cases:', all_cases
-        print 'Number of unique cases:', len(self.get_uniq_cases())
+        print('Number of cases:', all_cases)
+        print('Number of unique cases:', len(self.get_uniq_cases()))
         case_histo = self.case_length_histogram()
-        print 'Length of shortest case:',case_histo[0][0]
-        print 'Length of largest case:',case_histo[-1][0]
+        print('Length of shortest case:',case_histo[0][0])
+        print('Length of largest case:',case_histo[-1][0])
         total_length = sum([length*numcases for length, numcases in case_histo])
-        print 'Average case length: {0:.1f}'.format(1.0*total_length/all_cases)
+        print('Average case length: {0:.1f}'.format(1.0*total_length/all_cases))
         
     def activity_frequencies(self, case_count=False):
         """Returns a dictionary maping each activity to the number of total
@@ -574,7 +574,7 @@ class Log:
         else:
             if own_fid:
                 file.close()
-            raise TypeError, "Invalid format for the log.write function"
+            raise TypeError("Invalid format for the log.write function")
         self.last_write_format = format
         self.mark_as_modified(False)
         if own_fid:
@@ -710,7 +710,7 @@ class EnhancedLog(Log):
                 own_fid = True
             else:
                 file = filename
-            print 'Saving dictionary to', file.name
+            print('Saving dictionary to', file.name)
             reencoder.save(file)
             if own_fid:
                 file.close()
@@ -764,7 +764,7 @@ class EnhancedLog(Log):
         else:
             if own_fid:
                 file.close()
-            raise TypeError, "Invalid format for the log.write function"
+            raise TypeError("Invalid format for the log.write function")
 #        self.last_write_format = format
 #        self.mark_as_modified(False)
         if own_fid:

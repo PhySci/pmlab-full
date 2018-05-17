@@ -36,7 +36,7 @@ class DictionaryReencoder():
     
     def update_dictionary(self, word):
         #to be reimplemented in subclasses
-        raise TypeError, "unknown key '{0}' in reencoder".format(word)
+        raise TypeError("unknown key '{0}' in reencoder".format(word))
     
     def save(self, filename):
         """Saves the dictionary table in pickle format, that can later be 
@@ -59,7 +59,7 @@ class DictionaryReencoder():
         inv_dict = {}
         for k, v in self.dict.iteritems():
             if v in inv_dict:
-                raise NonInvertibleDictionaryError, 'Dictionary Reencoder is not invertible'
+                raise NonInvertibleDictionaryError('Dictionary Reencoder is not invertible')
             else:
                 inv_dict[v] = k
         return DictionaryReencoder(inv_dict)
