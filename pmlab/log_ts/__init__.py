@@ -28,7 +28,7 @@ def cases_included_in_ts(log, ts, uniq_cases=False, partial_cases=False, verbose
             if len(edges) == 0:
                 break
             if len(edges) > 1:
-                raise IndeterminedTsError, "Ambiguous TS!"
+                raise(IndeterminedTsError("Ambiguous TS!"))
             s = edges[0].target()
             i += 1
         if i == 0:
@@ -44,18 +44,19 @@ def cases_included_in_ts(log, ts, uniq_cases=False, partial_cases=False, verbose
     if verbose:
         num_cases = len(cases)
         width=len(str(num_cases))
-        print "Total cases in log:  {0:{width}}".format(num_cases, width=width)
-        print "Excluded:            {0:{width}} {1:7.2%}".format(excluded_traces,
+        print("Total cases in log:  {0:{width}}".format(num_cases, width=width))
+        print("Excluded:            {0:{width}} {1:7.2%}".format(excluded_traces,
                                                                 excluded_traces / (1.0*num_cases),
-                                                                width=width )
-        print "Partially Included:  {0:{width}} {1:7.2%}".format(partially_included,
+                                                                width=width ))
+        print("Partially Included:  {0:{width}} {1:7.2%}".format(partially_included,
                                                     partially_included / (1.0*num_cases),
-                                                    width=width),
+                                                    width=width)),
         if partially_included:
-            print "average included length {0:5.2%}".format(ratio/(1.0*partially_included))
+            print("average included length {0:5.2%}".format(ratio/(1.0*partially_included)))
         else:
+            # WTF ???
             print
-        print "Totally Included:    {0:{width}} {1:7.2%}".format(totally_included,
+        print("Totally Included:    {0:{width}} {1:7.2%}".format(totally_included,
                                                                 totally_included / (1.0*num_cases),
-                                                                width=width )
+                                                                width=width ))
     return Log(uniq_cases=saved_cases)

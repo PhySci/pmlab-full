@@ -1,6 +1,6 @@
 from Tkinter import *
-from __layouting import *
-from __bpmn_diagram import GenerateDiagramFromProcess, BPMNDI_Bounds, BPMNDI_Waypoint
+from .__layouting import *
+from .__bpmn_diagram import GenerateDiagramFromProcess, BPMNDI_Bounds, BPMNDI_Waypoint
 import math
 
 

@@ -9,6 +9,7 @@ import gzip
 from ..log import reencoders
 import csv
 import re
+import json
 #import projectors
 #import filters
 #import clustering
@@ -579,29 +580,34 @@ class Log:
         self.mark_as_modified(False)
         if own_fid:
             file.close()
-    
+
+
 class EnhancedLog(Log):
-    """Class representing a log with enhanced information. Each activity is 
-    represented by a dictionary. Dictionary keywords can be whatever, however
-    we define some standard concepts:
+    """
+    Class representing a log with enhanced information. Each activity is represented by a dictionary.
+    Dictionary keywords can be whatever, however we define some standard concepts:
         name: activity name
         start_time: initial time of the activity
         end_time: end time of the activity
     
     Since additional information is present, the support for unique cases in 
-    this class is more limited than in plain logs."""
-    def __init__(self, filename=None, format=None, cases=None):
-        """ Constructs an enhanced log.
-        
-        [filename] file name if the log was obtained from a file.
-        [format] only meaningful if filename is not None, since it is the format
-        of the original file. Valid values: 'raw', 'raw_uniq', 'xes'.
-        If [cases] are given, constructs a log with those cases. Otherwise 
-        return an empty log."""
-        Log.__init__(self, filename=filename, format=format, cases=cases)
+    this class is more limited than in plain logs.
+    """
+
+    def __init__(self, file_name=None, file_format=None, cases=None):
+        """
+        Constructs an enhanced log.
+        :param filename - file name if the log was obtained from a file.
+        :param format - only meaningful if filename is not None, since it is the format of the original file.
+        Valid values: 'raw', 'raw_uniq', 'xes'.
+        :param cases - if 'cases' are given, constructs a log with those cases. Otherwise
+        return an empty log
+        """
+        Log.__init__(self, filename=file_name, format=file_format, cases=cases)
     
     def get_cases(self, full_info=False):
-        """Returns the list of cases of the log. 
+        """
+        Returns the list of cases of the log.
         
         If [full_info] is True, then the cases with the full information are 
         returned (i.e., a list of sequences of dictionaries). Otherwise, only
@@ -614,23 +620,25 @@ class EnhancedLog(Log):
             return [[act['name'] for act in case] for case in self.cases]
     
     def get_uniq_cases(self):
-        """Returns the list of unique cases of the log. Unique cases are 
-        computed from the cases (and permanently stored)."""
+        """
+        Returns the list of unique cases of the log. Unique cases are
+        computed from the cases (and permanently stored).
+        """
         if self.cases and not self.uniq_cases:
             for case in self.cases:
                 self.uniq_cases[tuple([act['name'] for act in case])] += 1
         return self.uniq_cases
 
     def add_dummy_start_activity(self, candidates=['S','start','begin']):
-        """Adds a dummy start activity to all cases, using the first element
-        in candidates list that does not appear in the current log alphabet. If
-        no candidates are available, None is returned. Otherwise the name of the
-        dummy activity is returned."""
-        possible_candidates = [cand for cand in candidates 
-                                if cand not in self.get_alphabet()]
+        """
+        Adds a dummy start activity to all cases, using the first element in candidates list that does not appear
+        in the current log alphabet. If no candidates are available, None is returned. Otherwise the name of the
+        dummy activity is returned.
+        :param candidates
+        """
+        possible_candidates = [cand for cand in candidates if cand not in self.get_alphabet()]
         if not possible_candidates:
-            print ('All candidates for initial activity where already used, '
-                'please enlarge candidate list and rerun.')
+            print('All candidates for initial activity where already used, please enlarge candidate list and rerun.')
             return None
         start_act = possible_candidates[0]
         for case in self.cases:
@@ -675,13 +683,13 @@ class EnhancedLog(Log):
 #        return end_act
     
     def reencode(self, reencoder, write_dict=False, dict_file=None):
-        """Reencodes the log activities using the given reencoder.
-        [reencoder] object with a 'reencode(word)' function and a 'save'
-        function that allows to save the encoding to a file.
-        [write_dict] True if the reencoding dictionary must be written
-        [dict_file] can be a file or a filename. If [write_dict] the dictionary
-        will be written here. If None, the name of the log will be used to 
-        store the dictionary, appending '.dict'.
+        """
+        Reencodes the log activities using the given reencoder.
+        :param reencoder - object with a 'reencode(word)' function and a 'save' function that allows to save the
+        encoding to a file.
+        :param write_dict - True if the reencoding dictionary must be written
+        :param dict_file - can be a file or a filename. If 'write_dict' the dictionary will be written here.
+        If None, the name of the log will be used to store the dictionary, appending '.dict'.
         
         Example:
             log.reencode( pmlab.log.reencoders.AlphaReencoder() )
@@ -705,22 +713,22 @@ class EnhancedLog(Log):
                     dict_file = self.filename+'.dict'
                 else:
                     dict_file = 'reencode.dict'
-            if isinstance(dict_file, basestring): #a filename
-                file = open(dict_file,'w')
+            if isinstance(dict_file, os.PathLike): #a filename
+                file = open(dict_file, 'w')
                 own_fid = True
             else:
-                file = filename
+                file = self.filename
             print('Saving dictionary to', file.name)
             reencoder.save(file)
             if own_fid:
                 file.close()
                 
     def cases_per_activity(self, uniq_cases=False):
-        """Returns a dictionary that maps each activity to a list of the 
+        """
+        Returns a dictionary that maps each activity to a list of the
         case indexes in which the activity appears.
-        
-        [uniq_cases] Determines if the indexes correspond to all the cases or
-        just the unique cases."""
+        :param uniq_cases - Determines if the indexes correspond to all the cases or just the unique cases.
+        """
         if not uniq_cases:
             cases = self.get_cases()
             cases_per_act = defaultdict(set)
@@ -736,30 +744,31 @@ class EnhancedLog(Log):
         return cases_per_act
     
     def save(self, filename, format='json'):
-        """Write the log in [filename] using the given format. 
-        [filename]: file or filename in which the log has to be written
-        Format values are:
+        """
+        Write the log using the given format.
+        :param filename - file or filename in which the log has to be written
+        :param format - format values are:
             'raw': print all cases (with repetitions), just the activity names.
             'raw_uniq': print all unique cases, just the activity names.
             'xes': use the XES format, all the information.
         """
         own_fid = False
-        if isinstance(filename, basestring): #a filename
+        if isinstance(filename, os.PathLike): #a filename
             file = open(filename,'w')
             self.filename = filename
             own_fid = True
         else:
             file = filename
             self.filename = file.name
-        if format=='raw':
+        if format == 'raw':
             for case in self.get_cases():
                 print >> file, ' '.join([act['name'] for act in case])
-        elif format=='raw_uniq':
+        elif format == 'raw_uniq':
             for case in self.get_uniq_cases():
                 print >> file, ' '.join(case)
-        elif format=='xes':
+        elif format == 'xes':
             pass
-        elif format=='json':
+        elif format == 'json':
             json.dump(self.get_cases(), file)
         else:
             if own_fid:

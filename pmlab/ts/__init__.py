@@ -2,14 +2,15 @@ from collections import deque
 import tempfile
 import subprocess
 
-from pyparsing import (ParserElement, Word, Optional, Literal, oneOf, LineEnd,
-                        ZeroOrMore, OneOrMore, Suppress, Group, ParseException, 
-                        alphas, nums, alphanums, pythonStyleComment)
+from pyparsing import ParserElement, Word, Optional, Literal, oneOf, LineEnd, ZeroOrMore, OneOrMore, Suppress, Group,
+from pyparsing import ParseException, alphas, nums, alphanums, pythonStyleComment)
 import graph_tool.all as gt 
 
 class IndeterminedTsError(Exception):
-    """This error is raised whenever there is non determinism in the TS and this is
-    not expected"""
+    """
+    This error is raised whenever there is non determinism in the TS and this is
+    not expected
+    """
     pass
 
 class UnfitTsError(Exception):
@@ -29,7 +30,7 @@ def ts_from_log(log, conversion, tail=0, folding=0):
     if (log.modified_since_last_write or 
         log.last_write_format not in ('raw','raw_uniq')):
         tmpfile = tempfile.NamedTemporaryFile(mode='w', delete=False)
-        print "Saving log to temporary file '{0}'".format( tmpfile.name )
+        print("Saving log to temporary file '{0}'".format( tmpfile.name ))
         log.save(tmpfile)
         tmpfile.close()
         log_filename = tmpfile.name
@@ -45,11 +46,11 @@ def ts_from_log(log, conversion, tail=0, folding=0):
         elif conversion in ('mset','set','cfm'):
             params.append('--'+conversion)
         else:
-            raise TypeError, "Invalid conversion for the log.convert_to_ts function"
+            raise(TypeError("Invalid conversion for the log.convert_to_ts function"))
     params.append( log_filename )
-    log2ts_output = subprocess.check_output( params )
+    log2ts_output = subprocess.check_output(params)
     tmpfile2 = tempfile.NamedTemporaryFile(mode='w', delete=False)
-    print "Saving TS to temporary file '{0}'".format( tmpfile2.name )
+    print("Saving TS to temporary file '{0}'".format(tmpfile2.name))
     print >>tmpfile2, log2ts_output
     tmpfile2.close()
     ts = ts_from_file(tmpfile2.name)
@@ -103,11 +104,11 @@ def ts_from_sis(file_or_filename):
             ts.set_state_frequency(f[0], f[1])
 
     if len(filename) > 0:
-		ts.mark_as_modified( False )
+        ts.mark_as_modified(False)
     return ts
 
 def ts_from_file(filename):
-	return ts_from_sis(filename)
+    return ts_from_sis(filename)
 
 class TransitionSystem:
     """ Class representing a Transitions System. Uses a graph_tool graph as 
@@ -271,9 +272,10 @@ class TransitionSystem:
         self.name_to_state = {self.vp_state_name[s] : self.g.vertex_index[s] for s in self.g.vertices()}
         self.mark_as_modified()
 
-	def remove_states(self, states):
-		"""Removes an iterable of states [states], and all their transitions.
-        [states] must not contain duplicates.
+    def remove_states(self, states):
+        """
+		Removes an iterable of states [states], and all their transitions.
+		:param states - must not contain duplicates.
         """
         for v in sorted((self.get_state(s) for s in states), reverse = True):
             self.g.remove_vertex(v)
@@ -371,9 +373,9 @@ class TransitionSystem:
                 #compute destination state
                 edges = list(self.find_output_edges(s, activity))
                 if len(edges) > 1:
-                    raise IndeterminedTsError, "Ambiguous TS! Cannot map frequencies."
+                    raise(IndeterminedTsError("Ambiguous TS! Cannot map frequencies."))
                 elif len(edges) == 0:
-                    raise UnfitTsError, "Unfit TS"
+                    raise(UnfitTsError("Unfit TS"))
                 if edge_freq:
                     self.ep_edge_frequency[edges[0]] += occ
                 s = edges[0].target()
@@ -436,7 +438,7 @@ class TransitionSystem:
                 penwidth=(self.ep_edge_frequency, 10.0/all_traces)
             else:
                 penwidth=1.0
-            print vprops
+            print(vprops)
             if self.g.num_vertices() < 150:
                 layout = 'dot'
                 overlap = False
@@ -470,14 +472,14 @@ class TransitionSystem:
             elif filename.endswith('.svg'):
                 format = '-Fsvg'
             else:
-                raise TypeError, 'Unsupported output for draw_astg'
+                raise(TypeError('Unsupported output for draw_astg'))
             #check if file can be forwarded as input_filename 
             if self.filename and not self.modified_since_last_write:
                 input_filename = self.filename
             else:
             # or create tmp file with save
                 tmpfile = tempfile.NamedTemporaryFile(mode='w', delete=False)
-                print "Saving TS to temporary file '{0}'".format( tmpfile.name )
+                print("Saving TS to temporary file '{0}'".format(tmpfile.name))
                 self.save(tmpfile)
                 tmpfile.close()
                 input_filename = tmpfile.name

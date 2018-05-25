@@ -29,7 +29,7 @@ def run_rapidminer_script(script, stdout, defs):
 	try:
 		rapidminer_home = os.environ['RAPIDMINER_HOME']
 	except KeyError:
-		raise EnvironmentError, "RAPIDMINER_HOME is not set"
+		raise(EnvironmentError("RAPIDMINER_HOME is not set"))
 	rapidminer_bin = os.path.abspath(rapidminer_home + "/scripts/rapidminer")
 	script = os.path.abspath(os.path.join(os.path.dirname(__file__), script))
 	args = [rapidminer_bin, '-f', script]
